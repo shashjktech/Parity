@@ -1,0 +1,65 @@
+<<<<<<< HEAD
+# Byte-compiled / optimized / cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Virtual environments
+myenv/
+env/
+ENV/
+.venv/
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+<<<<<<< HEAD
+# Local SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+test.db
+
+# Operating System & IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Testing & coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+=======
+secrets/
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Local Python environments
+.venv/
+venv/
+env/
+ENV/
+
+# Build and packaging outputs
+build/
+dist/
+*.egg-info/
+
+firebase-adminsdk.json
+firebase_sdk.json
