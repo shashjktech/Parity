@@ -15,7 +15,7 @@ def generate_id() -> str:
 class InspectionSchedule(Base):
     __tablename__ = 'inspection_schedules'
 
-    id = Column(String(36), primary_key=True, default=generate_id())
+    id = Column(String(36), primary_key=True, default=generate_id)
     property_id = Column(String(36), ForeignKey('properties.id'), nullable=False)
     name = Column(String(255), nullable=False)
     schedule_type = Column(SQLEnum(ScheduleType), nullable=False)

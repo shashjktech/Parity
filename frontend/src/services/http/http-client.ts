@@ -20,11 +20,12 @@ function parseJson(text: string): any {
 export async function request<T>(path: string, options: Options = {}): Promise<T> {
   const { method = 'GET', body, token, timeoutMs = 15000 } = options;
   const multipart = typeof FormData !== 'undefined' && body instanceof FormData;
+  const url = `${env.apiUrl}${path}`;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const res = await fetch(`${env.apiUrl}${path}`, {
+    const res = await fetch(url, {
       method,
       headers: {
         Accept: 'application/json',
@@ -39,6 +40,14 @@ export async function request<T>(path: string, options: Options = {}): Promise<T
     const data = text ? parseJson(text) : null;
 
     if (!res.ok) {
+      if (__DEV__) {
+        console.error('[http] response error', {
+          method,
+          url,
+          status: res.status,
+          data,
+        });
+      }
       throw new ApiError(res.status, data?.code ?? 'HTTP_ERROR', data?.message ?? 'Something went wrong. Please try again.', {
         fieldErrors: data?.fieldErrors,
         details: data?.details,
@@ -47,7 +56,18 @@ export async function request<T>(path: string, options: Options = {}): Promise<T
     return data as T;
   } catch (e) {
     if (e instanceof ApiError) throw e;
-    if (e instanceof Error && e.name === 'AbortError') {
+    const timedOut = controller.signal.aborted || (e instanceof Error && e.name === 'AbortError');
+    if (__DEV__) {
+      console.error('[http] transport error', {
+        method,
+        url,
+        errorName: e instanceof Error ? e.name : typeof e,
+        errorMessage: e instanceof Error ? e.message : String(e),
+        timedOut,
+        timeoutMs,
+      });
+    }
+    if (timedOut) {
       throw new ApiError(0, 'TIMEOUT', 'The request timed out. Please try again.');
     }
     throw new ApiError(0, 'NETWORK', 'No internet connection. Please check and try again.');

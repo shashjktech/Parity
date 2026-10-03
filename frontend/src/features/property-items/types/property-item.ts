@@ -1,23 +1,16 @@
-export type PropertyItemKind = 'room' | 'area' | 'asset';
-export type PropertyItemStatus = 'AVAILABLE' | 'OUT_OF_SERVICE';
+export type PropertySpaceType = "room" | "area" | "asset";
 
 export type PropertyItem = {
   id: string;
   property_id: string;
-  kind: PropertyItemKind;
+  type: PropertySpaceType;
   name: string;
-  subtype: string | null;
-  area: string | null;
-  floor_level: string | null;
-  capacity: number | null;
-  status: PropertyItemStatus;
+  promptId: string | null;
   description: string | null;
   image_url: string | null;
+  image_headers?: Record<string, string>;
   created_at: string;
 };
 
-export type CreatePropertyItem = Pick<PropertyItem, 'kind' | 'name'> &
-  Partial<Pick<
-    PropertyItem,
-    'subtype' | 'area' | 'floor_level' | 'capacity' | 'status' | 'description'
-  >> & { image_path?: string | null };
+export type CreatePropertyItem = Pick<PropertyItem, "type" | "name"> &
+  Partial<Pick<PropertyItem, "promptId" | "description">>;

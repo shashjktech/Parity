@@ -15,13 +15,13 @@ def generate_id() -> str:
 class Space(Base):
     __tablename__ = 'spaces'
 
-    id = Column(String(36), primary_key=True, default=generate_id())
+    id = Column(String(36), primary_key=True, default=generate_id)
     property_id = Column(String(36), ForeignKey('properties.id'), nullable=False)
     name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
     space_type = Column(SQLEnum(SpaceType), nullable=False)
-    floor_level = Column(String(50))
     created_at = Column(DateTime, default=func.now())
 
     property = relationship("Property", back_populates="spaces")
-    views = relationship("SpaceView", back_populates="space")
+    #views = relationship("SpaceView", back_populates="space")
     master_images = relationship("MasterImage", back_populates="space")

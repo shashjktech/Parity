@@ -31,3 +31,7 @@ class Property(Base):
     spaces = relationship("Space", back_populates="property")
     master_images = relationship("MasterImage", back_populates="property")
     schedules = relationship("InspectionSchedule", back_populates="property")
+    prompts = relationship(
+    "Prompt",
+    back_populates="property",
+)

@@ -15,7 +15,7 @@ def generate_id() -> str:
 class InspectionCapture(Base):
     __tablename__ = 'inspection_captures'
 
-    id = Column(String(36), primary_key=True, default=generate_id())
+    id = Column(String(36), primary_key=True, default=generate_id)
     worker_id = Column(String(36), ForeignKey('app_users.id'), nullable=False)
     schedule_id = Column(String(36), ForeignKey('inspection_schedules.id'), nullable=False)
     space_view_id = Column(String(36), ForeignKey('space_views.id'), nullable=False)

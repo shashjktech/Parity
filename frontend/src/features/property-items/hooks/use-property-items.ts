@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 
-import { getPropertyItems } from '../api/property-items-api';
+import { getPropertyItems } from '../api/property-item-api';
 import type { PropertyItem } from '../types/property-item';
 
 export function usePropertyItems(propertyId?: string) {

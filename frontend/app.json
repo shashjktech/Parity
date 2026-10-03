@@ -19,7 +19,7 @@
       "predictiveBackGestureEnabled": false,
       "useCleartextTraffic": true,
       "package": "com.parity.property",
-      "googleServicesFile": "./google-service.json"
+      "googleServicesFile": "./google-services.json"
 
 
     },

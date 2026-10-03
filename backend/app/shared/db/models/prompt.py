@@ -1,5 +1,5 @@
 
-from sqlalchemy import DateTime, String, Text, Column
+from sqlalchemy import DateTime, String, Text, Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import secrets
@@ -14,10 +14,19 @@ def generate_id() -> str:
 class Prompt(Base):
     __tablename__ = 'prompts'
 
-    id = Column(String(36), primary_key=True, default=generate_id())
+    id = Column(String(36), primary_key=True, default=generate_id)
+    property_id = Column(
+        String(36),
+        ForeignKey("properties.id"),
+        nullable=False,
+    )
     name = Column(String(255), nullable=False)
     prompt_text = Column(Text, nullable=False)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-
+    
+    property = relationship(
+        "Property",
+        back_populates="prompts",
+    )
     master_images = relationship("MasterImage", back_populates="prompt")

@@ -15,10 +15,10 @@ def generate_id() -> str:
 class MasterImage(Base):
     __tablename__ = 'master_images'
 
-    id = Column(String(36), primary_key=True, default=generate_id())
+    id = Column(String(36), primary_key=True, default=generate_id)
     property_id = Column(String(36), ForeignKey('properties.id'), nullable=False)
     space_id = Column(String(36), ForeignKey('spaces.id'), nullable=False)
-    space_view_id = Column(String(36), ForeignKey('space_views.id'), nullable=False)
+    #space_view_id = Column(String(36), ForeignKey('space_views.id'), nullable=False)
     master_image_url = Column(Text, nullable=False)
     prompt_id = Column(String(36), ForeignKey('prompts.id'))
     created_at = Column(DateTime, default=func.now())
@@ -26,5 +26,5 @@ class MasterImage(Base):
 
     property = relationship("Property", back_populates="master_images")
     space = relationship("Space", back_populates="master_images")
-    space_view = relationship("SpaceView", back_populates="master_images")
+    #space_view = relationship("SpaceView", back_populates="master_images")
     prompt = relationship("Prompt", back_populates="master_images")

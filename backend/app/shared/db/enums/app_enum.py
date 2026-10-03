@@ -23,16 +23,18 @@ class RecurrenceType(enum.Enum):
     CUSTOM_DAYS = "CUSTOM_DAYS"
 
 class SpaceType(enum.Enum):
-    GUEST_ROOM = "GUEST_ROOM"
-    BEDROOM = "BEDROOM"
-    KITCHEN = "KITCHEN"
-    BAR_COUNTER = "BAR_COUNTER"
-    DINING_AREA = "DINING_AREA"
-    OUTDOOR = "OUTDOOR"
-    RESTROOM = "RESTROOM"
-    RECEPTION = "RECEPTION"
-    STORAGE = "STORAGE"
-    OTHER = "OTHER"
+    ROOM = "ROOM"
+    AREA="AREA"
+    ASSETS="ASSETS"
+    # BEDROOM = "BEDROOM"
+    # KITCHEN = "KITCHEN"
+    # BAR_COUNTER = "BAR_COUNTER"
+    # DINING_AREA = "DINING_AREA"
+    # OUTDOOR = "OUTDOOR"
+    # RESTROOM = "RESTROOM"
+    # RECEPTION = "RECEPTION"
+    # STORAGE = "STORAGE"
+    # OTHER = "OTHER"
 
 class PropertyWorkerStatus(enum.Enum):
     PENDING = "PENDING"
