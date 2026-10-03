@@ -1,0 +1,1 @@
+export { OwnerPropertyDetailsScreen as default } from '@/features/owner-dashboard';

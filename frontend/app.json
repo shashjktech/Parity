@@ -19,7 +19,8 @@
       "predictiveBackGestureEnabled": false,
       "useCleartextTraffic": true,
       "package": "com.parity.property",
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-service.json"
+
 
     },
     "web": {
@@ -43,6 +44,12 @@
         }
       ],
       [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Allow Parity to take a photo of a room, area, or asset."
+        }
+      ],
+      [
         "react-native-maps",
         {
           "androidGoogleMapsApiKey": "process.env.GOOGLE_MAPS_API_KEY"
@@ -53,6 +60,7 @@
       "expo-secure-store",
       "@react-native-firebase/app",
       "@react-native-firebase/auth"
+
 
     ],
     "experiments": {

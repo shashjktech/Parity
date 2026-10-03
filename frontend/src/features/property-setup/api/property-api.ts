@@ -7,17 +7,6 @@ export type CreatePropertyResponse = {
   id: string;
   name: string;
 };
-export type PropertyResponse = {
-  id: string;
-  owner_id: string;
-  name: string;
-  address: string | null;
-  timezone: string | null;
-  verification_status: string;
-  subscription_plan_id: string | null;
-  created_at: string;
-};
-
 export async function createProperty(
     property: PropertyValues,
   ): Promise<CreatePropertyResponse> {
@@ -44,22 +33,5 @@ export async function createProperty(
     method: 'POST',
     token: accessToken,
     body,
-  });
-}
-
-export async function getProperties(): Promise<PropertyResponse[]> {
-  const accessToken = await tokenStorage.getAccessToken();
-
-  if (!accessToken) {
-    throw new ApiError(
-      401,
-      'UNAUTHORIZED',
-      'Please sign in again to view your properties.',
-    );
-  }
-
-  return request<PropertyResponse[]>('/v1/properties', {
-    method: 'GET',
-    token: accessToken,
   });
 }

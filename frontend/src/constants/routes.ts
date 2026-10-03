@@ -13,4 +13,7 @@ export const routes = {
   home: '/home',
   workerDashboard: '/worker-dashboard',
   workerPropertyDetails: '/worker-property-details',
+  ownerPropertyDetails: '/owner-property-details',
+  propertySpaces: '/property-spaces',
+  addPropertyItem: '/add-property-item',
 } as const;

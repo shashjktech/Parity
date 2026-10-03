@@ -1,12 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from sqlalchemy import select
 # Database session dependency
 from app.shared.db.config.session import get_db
 
 # Owner authentication dependency (adjust to your auth provider)
 from app.core.dependencies import get_current_user  # Must verify caller has Owner ('O') role
-from app.shared.db.models import AppUser, Property
+from app.shared.db.models import AppUser
 # Schemas and Service
 from app.services.properties.schema import PropertyCreateRequest, PropertyResponse
 from app.services.properties.service import PropertyService
@@ -39,22 +38,11 @@ def get_property_details(
     db: Session = Depends(get_db),
     current_user: AppUser = Depends(get_current_user),
 ):
-    property = (
-        db.query(Property)
-        .filter(
-            Property.id == property_id,
-            Property.owner_id == current_user.id,
-        )
-        .first()
+    service = PropertyService(db=db)
+    return service.get_property_details(
+        owner_id=current_user.id,
+        property_id=property_id,
     )
-
-    if not property:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Property not found.",
-        )
-
-    return property
 
 
 @router.get(
@@ -66,10 +54,5 @@ def get_my_properties(
     current_user: AppUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    stmt = (
-        select(Property)
-        .where(Property.owner_id == current_user.id)
-        .order_by(Property.created_at.desc())
-    )
-
-    return db.scalars(stmt).all()
+    service = PropertyService(db=db)
+    return service.get_owner_properties(owner_id=current_user.id)

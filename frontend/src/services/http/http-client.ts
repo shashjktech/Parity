@@ -19,6 +19,7 @@ function parseJson(text: string): any {
 /** Every backend error must look like: { code, message, fieldErrors?, details? } */
 export async function request<T>(path: string, options: Options = {}): Promise<T> {
   const { method = 'GET', body, token, timeoutMs = 15000 } = options;
+  const multipart = typeof FormData !== 'undefined' && body instanceof FormData;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -27,10 +28,10 @@ export async function request<T>(path: string, options: Options = {}): Promise<T
       method,
       headers: {
         Accept: 'application/json',
-        ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        ...(body !== undefined && !multipart ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body === undefined ? undefined : multipart ? body as FormData : JSON.stringify(body),
       signal: controller.signal,
     });
 

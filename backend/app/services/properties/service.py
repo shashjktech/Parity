@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.shared.db.enums import VerificationStatus
 from app.shared.db.models.property import Property
@@ -11,6 +12,43 @@ from app.shared.utils.generate_property_id import generate_property_code
 class PropertyService:
     def __init__(self, db: Session) -> None:
         self.db = db
+
+    def get_property_details(self, owner_id: str, property_id: str) -> Property:
+        try:
+            property = self.db.scalar(
+                select(Property).where(
+                    Property.id == property_id,
+                    Property.owner_id == owner_id,
+                )
+            )
+        except SQLAlchemyError as err:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to retrieve property details.",
+            ) from err
+
+        if property is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Property not found.",
+            )
+
+        return property
+
+    def get_owner_properties(self, owner_id: str) -> list[Property]:
+        try:
+            properties = self.db.scalars(
+                select(Property)
+                .where(Property.owner_id == owner_id)
+                .order_by(Property.created_at.desc())
+            ).all()
+        except SQLAlchemyError as err:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to retrieve properties.",
+            ) from err
+
+        return properties
 
     def add_property(
         self,
@@ -47,7 +85,7 @@ class PropertyService:
                 name=payload.name.strip(),
                 address= f"{payload.address}, {payload.city}, {payload.state}, {payload.country}, {payload.pincode}",
                 
-                verification_status=VerificationStatus.PENDING,
+                verification_status=VerificationStatus.VERIFIED,
             )
 
             try:

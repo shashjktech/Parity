@@ -21,6 +21,6 @@ class PropertyResponse(BaseModel):
     address: str | None
     timezone: str | None
     verification_status: VerificationStatus
-    subscription_plan_id: str | None = None
     created_at: datetime
+
 
