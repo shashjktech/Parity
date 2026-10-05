@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.shared.db.config.session import get_db
 
 # Owner authentication dependency (adjust to your auth provider)
-from app.core.dependencies import get_current_user  # Must verify caller has Owner ('O') role
+from app.core.dependencies import get_current_user,require_owner  # Must verify caller has Owner ('O') role
 from app.shared.db.models import AppUser
 # Schemas and Service
 from app.services.properties.schema import PropertyCreateRequest, PropertyResponse
@@ -22,12 +22,13 @@ router = APIRouter(prefix="/properties", tags=["Properties"])
 )
 def add_property(
     payload: PropertyCreateRequest,
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_owner),
     db: Session = Depends(get_db),
 ) -> PropertyResponse:
     """Create a new property entity for the authenticated owner."""
     service = PropertyService(db=db)
-    return service.add_property(owner_id=current_user.id, payload=payload)
+    property_obj = service.add_property(owner_id=current_user.id, payload=payload)
+    return PropertyResponse.model_validate(property_obj)
 
 @router.get(
     "/{property_id}",
@@ -36,7 +37,7 @@ def add_property(
 def get_property_details(
     property_id: str,
     db: Session = Depends(get_db),
-    current_user: AppUser = Depends(get_current_user),
+    current_user: AppUser = Depends(require_owner),
 ):
     service = PropertyService(db=db)
     return service.get_property_details(
@@ -51,7 +52,7 @@ def get_property_details(
     summary="Get owner's properties",
 )
 def get_my_properties(
-    current_user: AppUser = Depends(get_current_user),
+    current_user: AppUser = Depends(require_owner),
     db: Session = Depends(get_db),
 ):
     service = PropertyService(db=db)

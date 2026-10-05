@@ -70,7 +70,7 @@ export function useOtpVerification({ requestId, expiresInSec, resendInSec }: Par
         await tokenStorage.save({ accessToken: res.accessToken, refreshToken: res.refreshToken });
       }
 
-      if (registrationDraft.role === 'owner') {
+      if (registrationDraft.role === 'OWNER') {
         router.replace(routes.addProperty);
       } else {
         router.replace(routes.workerDashboard);

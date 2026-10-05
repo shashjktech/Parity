@@ -46,7 +46,7 @@ export function RoleSelectionScreen() {
             title="Property Owner"
             description="Manage properties, track cleanliness, and oversee teams"
             onPress={() => {
-              updateRole("owner");
+              updateRole("OWNER");
               router.push(routes.signup);
             }}
           />
@@ -55,7 +55,7 @@ export function RoleSelectionScreen() {
             title="Worker"
             description="Join a property and capture room photos"
             onPress={() => {
-              updateRole("worker");
+              updateRole("WORKER");
               router.push(routes.signup);
             }}
           />

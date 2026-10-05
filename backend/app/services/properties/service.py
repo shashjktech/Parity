@@ -48,7 +48,7 @@ class PropertyService:
                 detail="Failed to retrieve properties.",
             ) from err
 
-        return properties
+        return list(properties)
 
     def add_property(
         self,

@@ -7,7 +7,7 @@ export type SignupValues = {
   phone: string;
   password: string
 };
-export type UserRole = 'owner' | 'worker';
+export type UserRole = 'OWNER' | 'WORKER';
 
 // temporary draft to save all the values of the signup form before sending to the backend
 export type RegistrationDraft = SignupValues & {

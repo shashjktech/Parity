@@ -74,7 +74,7 @@ export function PropertyOverview({ property }: Props) {
       </View>
 
       <View style={styles.metrics}>
-        <Metric icon="bed-outline" value="—" label="Rooms" tone="green" />
+        <Metric icon="bed-outline" value="—" label="Spaces" tone="green" />
         <Metric icon="people-outline" value="—" label="Staff" tone="amber" />
         <Metric icon="images-outline" value="—" label="Photos" tone="blue" />
       </View>

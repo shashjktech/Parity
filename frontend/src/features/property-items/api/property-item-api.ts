@@ -2,7 +2,7 @@ import { ApiError } from "@/services/http/api-error";
 import { env } from "@/config/env";
 import { request } from "@/services/http/http-client";
 import { tokenStorage } from "@/services/storage/token-storage";
-import * as FileSystem from "expo-file-system/legacy";
+import { File as ExpoFile, UploadType } from "expo-file-system";
 import { Platform } from "react-native";
 import type { CreatePropertyItem, PropertyItem } from "../types/property-item";
 
@@ -67,28 +67,30 @@ export async function createPropertyItem(
     photoSize: photo?.size ?? photo?.file?.size,
     timeoutMs,
   });
-
   try {
+    if (!photo) {
+      throw new ApiError(0, "VALIDATION", "Please add a photo to create a property item.");
+    }
+
     const token = await accessToken();
 
-    // Native (Android/iOS) with a photo: use the native multipart uploader
+    // Native (Android/iOS) with a photo: native multipart upload, no fetch
     if (photo && Platform.OS !== "web") {
-      const fields: Record<string, string> = {
+      const parameters: Record<string, string> = {
         type: item.type,
         name: item.name,
       };
-      if (item.description) fields.description = item.description;
-      if (item.promptId) fields.promptId = item.promptId;
+      if (item.description) parameters.description = item.description;
+      if (item.promptId) parameters.promptId = item.promptId;
 
-      const res = await FileSystem.uploadAsync(
+      const result = await new ExpoFile(photo.uri).upload(
         `${env.apiUrl}${path}`,
-        photo.uri,
         {
-          httpMethod: "POST",
-          uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+          uploadType: UploadType.MULTIPART,
           fieldName: "photo",
           mimeType: photo.type,
-          parameters: fields,
+          httpMethod: "POST",
+          parameters,
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
@@ -98,16 +100,14 @@ export async function createPropertyItem(
 
       let data: any = null;
       try {
-        data = JSON.parse(res.body);
-      } catch {}
+        data = JSON.parse(result.body);
+      } catch { }
 
-      if (res.status < 200 || res.status >= 300) {
+      if (result.status < 200 || result.status >= 300) {
         throw new ApiError(
-          res.status,
+          result.status,
           data?.code ?? "HTTP_ERROR",
-          data?.message ??
-            data?.detail ??
-            "Something went wrong. Please try again.",
+          data?.message ?? data?.detail ?? "Something went wrong. Please try again.",
         );
       }
       console.info("[space-create] succeeded", {
@@ -118,26 +118,19 @@ export async function createPropertyItem(
       return data as { space_id: string };
     }
 
-    // Web, or no photo: normal fetch with FormData
-    const form = new FormData();
-    form.append("type", item.type);
-    form.append("name", item.name);
-    if (item.description) form.append("description", item.description);
-    if (item.promptId) form.append("promptId", item.promptId);
-    if (photo?.file) form.append("photo", photo.file, photo.name);
+    if (Platform.OS === "web") {
+      throw new ApiError(
+        400,
+        "UNSUPPORTED_PLATFORM",
+        "Web upload is not implemented yet."
+      );
+    }
 
-    const result = await request<{ space_id: string }>(path, {
-      method: "POST",
-      token,
-      body: form,
-      timeoutMs,
-    });
-    console.info("[space-create] succeeded", {
-      propertyId,
-      spaceId: result.space_id,
-      hasPhoto: Boolean(photo),
-    });
-    return result;
+    throw new ApiError(
+      500,
+      "UNKNOWN_STATE",
+      "Could not create property item."
+    );
   } catch (error) {
     console.error("[space-create] failed", {
       propertyId,
