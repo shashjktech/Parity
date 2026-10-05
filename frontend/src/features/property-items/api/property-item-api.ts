@@ -2,7 +2,8 @@ import { ApiError } from "@/services/http/api-error";
 import { env } from "@/config/env";
 import { request } from "@/services/http/http-client";
 import { tokenStorage } from "@/services/storage/token-storage";
-import { File as ExpoFile } from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
+import { Platform } from "react-native";
 import type { CreatePropertyItem, PropertyItem } from "../types/property-item";
 
 export type Prompt = {
@@ -69,16 +70,61 @@ export async function createPropertyItem(
 
   try {
     const token = await accessToken();
+
+    // Native (Android/iOS) with a photo: use the native multipart uploader
+    if (photo && Platform.OS !== "web") {
+      const fields: Record<string, string> = {
+        type: item.type,
+        name: item.name,
+      };
+      if (item.description) fields.description = item.description;
+      if (item.promptId) fields.promptId = item.promptId;
+
+      const res = await FileSystem.uploadAsync(
+        `${env.apiUrl}${path}`,
+        photo.uri,
+        {
+          httpMethod: "POST",
+          uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+          fieldName: "photo",
+          mimeType: photo.type,
+          parameters: fields,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        },
+      );
+
+      let data: any = null;
+      try {
+        data = JSON.parse(res.body);
+      } catch {}
+
+      if (res.status < 200 || res.status >= 300) {
+        throw new ApiError(
+          res.status,
+          data?.code ?? "HTTP_ERROR",
+          data?.message ??
+            data?.detail ??
+            "Something went wrong. Please try again.",
+        );
+      }
+      console.info("[space-create] succeeded", {
+        propertyId,
+        spaceId: data?.space_id,
+        hasPhoto: true,
+      });
+      return data as { space_id: string };
+    }
+
+    // Web, or no photo: normal fetch with FormData
     const form = new FormData();
     form.append("type", item.type);
     form.append("name", item.name);
     if (item.description) form.append("description", item.description);
     if (item.promptId) form.append("promptId", item.promptId);
-
-    if (photo) {
-      const file = photo.file ?? new ExpoFile(photo.uri);
-      form.append("photo", file, photo.name);
-    }
+    if (photo?.file) form.append("photo", photo.file, photo.name);
 
     const result = await request<{ space_id: string }>(path, {
       method: "POST",

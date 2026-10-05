@@ -32,6 +32,31 @@ app = FastAPI(
 )
 
 
+@app.middleware("http")
+async def log_space_create_ingress(request: Request, call_next):
+    if request.method != "POST" or not request.url.path.endswith("/spaces/add"):
+        return await call_next(request)
+
+    logger.info(
+        "Space create request received path=%s content_type=%s content_length=%s",
+        request.url.path,
+        request.headers.get("content-type"),
+        request.headers.get("content-length"),
+    )
+    try:
+        response = await call_next(request)
+    except Exception:
+        logger.exception("Space create request failed before response path=%s", request.url.path)
+        raise
+
+    logger.info(
+        "Space create request completed path=%s status_code=%s",
+        request.url.path,
+        response.status_code,
+    )
+    return response
+
+
 @app.exception_handler(AppError)
 async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
     return JSONResponse(

@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
+import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui';
 import { colors, fontFamily } from '@/theme';
@@ -17,7 +18,15 @@ export function PropertyItemCard({ item }: Props) {
             : require('@/assets/images/decor/room-placeholder.avif')
         }
         style={styles.image}
-        resizeMode="cover"
+        contentFit="cover"
+        onError={(error) => {
+          if (item.image_url) {
+            console.error('[property-item-image] failed to load', {
+              itemId: item.id,
+              error: error.error,
+            });
+          }
+        }}
       />
       <View style={styles.details}>
         <AppText style={styles.name} color={colors.textDark} numberOfLines={1}>{item.name}</AppText>
