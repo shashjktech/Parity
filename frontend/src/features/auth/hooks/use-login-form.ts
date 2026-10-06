@@ -44,7 +44,7 @@ export function useLoginForm() {
     try {
       const response = await authApi.login({ login_id: values.login_id.trim(), password: values.password });
       await tokenStorage.save(response);
-      router.replace(response.user?.role === 'worker' ? routes.workerDashboard : routes.home);
+      router.replace(response.user?.role === 'WORKER' ? routes.workerDashboard : routes.home);
     } catch (caught) {
       const apiError = toApiError(caught);
       if (apiError.code === 'ACCOUNT_NOT_FOUND') {

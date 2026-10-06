@@ -1,11 +1,11 @@
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from app.shared.db.enums import VerificationStatus
+from app.shared.db.enums import VerificationStatus, PropertyWorkerStatus
 from app.shared.db.models.property import Property
-from app.shared.db.models.user import AppUser
+from app.shared.db.models import AppUser, PropertyWorker
 from app.services.properties.schema import PropertyCreateRequest
 from app.shared.utils.generate_property_id import generate_property_code
 
@@ -49,6 +49,19 @@ class PropertyService:
             ) from err
 
         return list(properties)
+    
+    def get_workers_by_property(self, property_id: str):
+    
+            assignments = self.db.scalars(
+                select(PropertyWorker)
+                .options(joinedload(PropertyWorker.user))
+                .where(
+                    PropertyWorker.property_id == property_id,
+                    PropertyWorker.worker_status == PropertyWorkerStatus.ACTIVE,
+                )
+            ).all()
+    
+            return assignments
 
     def add_property(
         self,

@@ -34,3 +34,7 @@ class AppUser(Base):
     sessions = relationship("UserSession", back_populates="user")
     owned_properties = relationship("Property", back_populates="owner")
     inspection_captures = relationship("InspectionCapture", back_populates="worker")
+    property_assignments = relationship(
+        "PropertyWorker",
+        back_populates="user",
+    )

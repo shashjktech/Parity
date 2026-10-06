@@ -1,6 +1,6 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useRef } from "react";
+import { useRef,useState } from "react";
 import {
   KeyboardAvoidingView,
   Pressable,
@@ -24,6 +24,7 @@ export function LoginScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const keyboardVisible = useKeyboardVisible();
+  const [showPassword, setShowPassword] = useState(false);
   const identifierRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
   const form = useLoginForm();
@@ -96,6 +97,11 @@ export function LoginScreen() {
               ref={passwordRef}
               label="Password"
               icon={{ family: "ionicons", name: "lock-closed-outline" }}
+              rightIcon={{
+                family: "ionicons",
+                name: showPassword ? "eye-off-outline" : "eye-outline",
+                onPress: () => setShowPassword((prev) => !prev),
+              }}
               value={form.values.password}
               onChangeText={form.setPassword}
               onBlur={() => undefined}
@@ -106,7 +112,7 @@ export function LoginScreen() {
                   ? form.error
                   : undefined
               }
-              secureTextEntry
+              secureTextEntry={!showPassword}
               autoComplete="password"
               textContentType="password"
               returnKeyType="done"

@@ -16,4 +16,7 @@ export const routes = {
   ownerPropertyDetails: '/owner-property-details',
   propertySpaces: '/property-spaces',
   addPropertyItem: '/add-property-item',
+  manageWorkers: '/manage-workers',
+  wokrerInspectionChecklist: '/inspection-checklist',
+  workerSpaceCapture: '/worker-space-capture',
 } as const;

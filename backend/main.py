@@ -12,9 +12,10 @@ from app.core.exceptions import AppError
 from app.core.firebase import init_firebase
 from app.services.auth.routes import router as auth_router
 from app.services.properties.routes import router as property_router
-from app.services.login.route import router as login_router
 from app.services.spaces.route import router as space_router
 from app.services.prompts.route import router as prompt_router
+from app.services.worker.route import router as worker_router
+from app.services.Inspection.route import router as inspection_router
 
 logger = logging.getLogger(__name__)
 
@@ -105,3 +106,5 @@ app.include_router(auth_router, prefix=API_PREFIX)
 app.include_router(property_router, prefix=API_PREFIX)
 app.include_router(space_router, prefix=API_PREFIX)
 app.include_router(prompt_router, prefix=API_PREFIX)
+app.include_router(worker_router, prefix=API_PREFIX)
+app.include_router(inspection_router, prefix=API_PREFIX)

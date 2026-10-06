@@ -1,6 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
-from app.shared.db.enums import VerificationStatus
+from app.shared.db.enums import VerificationStatus, PropertyWorkerStatus
 
 
 class PropertyCreateRequest(BaseModel):
@@ -22,5 +22,14 @@ class PropertyResponse(BaseModel):
     timezone: str | None
     verification_status: VerificationStatus
     created_at: datetime
+
+class WorkerGetResponse(BaseModel):
+    workerId: str
+    workerFirstName: str
+    workerLastName: str
+    isOnline: bool
+    status: PropertyWorkerStatus
+    createdAt: datetime
+
 
 

@@ -95,7 +95,7 @@ export function PromptSelect({
             <ActivityIndicator style={styles.loader} color={colors.primary} />
           ) : prompts.length === 0 ? (
             <AppText style={styles.empty} color={colors.textSecondary}>
-              No prompts yet. Tap "Add New Prompt" to create one.
+              No prompts yet. Tap &quot;Add New Prompt&quot; to create one.
             </AppText>
           ) : (
             prompts.map((prompt) => {

@@ -4,38 +4,30 @@ import { Alert, Pressable, StyleSheet, View } from "react-native";
 import { AppText } from "@/components/ui";
 import { colors, fontFamily } from "@/theme";
 
-const actions = [
-  {
-    icon: "people-outline" as const,
-    title: "Manage Workers",
-    tone: "green" as const,
-  },
-  {
-    icon: "bed-outline" as const,
-    title: "Room Configuration",
-    tone: "amber" as const,
-  },
-  {
-    icon: "calendar-outline" as const,
-    title: "Scheduling & Reminders",
-    tone: "light" as const,
-  },
-];
-
 type Props = {
+  onManageWorkers: () => void;
   onRoomConfiguration: () => void;
   disabled?: boolean;
 };
 
-export function PropertyDetailsActions({ onRoomConfiguration, disabled = false }: Props) {
+export function PropertyDetailsActions({ onManageWorkers, onRoomConfiguration, disabled = false }: Props) {
+  const actions = [
+    { icon: "people-outline" as const, title: "Manage Workers", tone: "green" as const, onPress: onManageWorkers },
+    { icon: "bed-outline" as const, title: "Room Configuration", tone: "amber" as const, onPress: onRoomConfiguration },
+    {
+      icon: "calendar-outline" as const,
+      title: "Scheduling & Reminders",
+      tone: "light" as const,
+      onPress: () => Alert.alert("Scheduling & Reminders", "This section is not available yet."),
+    },
+  ];
+
   return (
     <View style={styles.actions}>
       {actions.map((action) => (
         <Pressable
           key={action.title}
-          onPress={disabled ? undefined : () => action.title === 'Room Configuration'
-            ? onRoomConfiguration()
-            : Alert.alert(action.title, 'This section is not available yet.')}
+          onPress={disabled ? undefined : action.onPress}
           disabled={disabled}
           style={({ pressed }) => [
             styles.action,
@@ -73,35 +65,13 @@ export function PropertyDetailsActions({ onRoomConfiguration, disabled = false }
 }
 
 const styles = StyleSheet.create({
-  actions: {
-    flexDirection: "row",
-    gap: 8,
-    paddingHorizontal: 18,
-    paddingTop: 10,
-  },
+  actions: { flexDirection: "row", gap: 8, paddingHorizontal: 18, paddingTop: 10 },
   action: {
-    flex: 1,
-    minHeight: 82,
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingHorizontal: 8,
-    borderRadius: 20,
+    flex: 1, minHeight: 82, flexDirection: "column", alignItems: "center", justifyContent: "center",
+    gap: 6, paddingHorizontal: 8, borderRadius: 20,
   },
-  actionLabelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 4,
-  },
-  actionText: {
-    flexShrink: 1,
-    fontFamily: fontFamily.medium,
-    fontSize: 10,
-    lineHeight: 14,
-    textAlign: "center",
-  },
+  actionLabelRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4 },
+  actionText: { flexShrink: 1, fontFamily: fontFamily.medium, fontSize: 10, lineHeight: 14, textAlign: "center" },
   green: { backgroundColor: "#075C43" },
   amber: { backgroundColor: "#B6651F" },
   light: { backgroundColor: "#F5F7F1", borderWidth: 1, borderColor: "#E2E8DF" },

@@ -1,0 +1,1 @@
+export { InspectionChecklistScreen as default } from '@/features/worker-dashboard';

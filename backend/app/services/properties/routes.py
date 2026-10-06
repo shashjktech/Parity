@@ -1,4 +1,7 @@
+from fastapi import HTTPException, status
+
 from fastapi import APIRouter, Depends, status
+from app.services.worker.service import WorkerService
 from sqlalchemy.orm import Session
 # Database session dependency
 from app.shared.db.config.session import get_db
@@ -7,7 +10,7 @@ from app.shared.db.config.session import get_db
 from app.core.dependencies import get_current_user,require_owner  # Must verify caller has Owner ('O') role
 from app.shared.db.models import AppUser
 # Schemas and Service
-from app.services.properties.schema import PropertyCreateRequest, PropertyResponse
+from app.services.properties.schema import PropertyCreateRequest, PropertyResponse, WorkerGetResponse
 from app.services.properties.service import PropertyService
 
 router = APIRouter(prefix="/properties", tags=["Properties"])
@@ -45,6 +48,29 @@ def get_property_details(
         property_id=property_id,
     )
 
+@router.get(
+    "/{propertyId}/workers",
+    response_model=list[WorkerGetResponse],
+)
+def get_worker_details(
+    propertyId: str,
+    db: Session = Depends(get_db),
+):
+    worker_service = PropertyService(db)
+
+    assignments = worker_service.get_workers_by_property(propertyId)
+
+    return [
+        WorkerGetResponse(
+            workerId=assignment.user.id,
+            workerFirstName=assignment.user.firstName,
+            workerLastName=assignment.user.lastName,
+            isOnline=True,
+            status=assignment.worker_status,
+            createdAt=assignment.created_at,
+        )
+        for assignment in assignments
+    ]
 
 @router.get(
     "",

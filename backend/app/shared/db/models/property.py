@@ -32,6 +32,10 @@ class Property(Base):
     master_images = relationship("MasterImage", back_populates="property")
     schedules = relationship("InspectionSchedule", back_populates="property")
     prompts = relationship(
-    "Prompt",
-    back_populates="property",
-)
+        "Prompt",
+        back_populates="property",
+    )
+    worker_assignments = relationship(
+        "PropertyWorker",
+        back_populates="property",
+    )

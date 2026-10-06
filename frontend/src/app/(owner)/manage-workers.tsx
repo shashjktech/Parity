@@ -1,0 +1,1 @@
+export { ManageWorkersScreen as default } from '@/features/manage-workers';

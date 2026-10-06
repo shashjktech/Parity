@@ -30,7 +30,7 @@ export function SignupScreen() {
   const keyboardVisible = useKeyboardVisible();
 
   const { state: registrationDraft, updatePropertyCode } = useRegistration();
-  const isWorker = registrationDraft.role === "worker";
+  const isWorker = registrationDraft.role === "WORKER";
 
   const [showPassword, setShowPassword] = useState(false);
 

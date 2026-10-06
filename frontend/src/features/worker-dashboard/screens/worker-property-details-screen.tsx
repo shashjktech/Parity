@@ -1,106 +1,154 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui';
-import { images } from '@/constants/assets';
+import { routes } from '@/constants/routes';
 import { colors, fontFamily } from '@/theme';
-
-const details = [
-  { icon: 'business-outline', label: 'Property Type', value: 'Café / Restaurant' },
-  { icon: 'business-outline', label: 'Total Area', value: '2,400 sq ft' },
-  { icon: 'time-outline', label: 'Working Hours', value: '8:00 AM – 10:00 PM' },
-  { icon: 'mail-outline', label: 'Your Role', value: 'Cleaning Staff' },
-] as const;
+import { PropertyPhoto } from '../components/property-photo';
+import { PropertyStatusBadge } from '../components/property-status-badge';
+import { WorkerScreenState } from '../components/worker-screen-state';
+import { useWorkerProperty } from '../hooks/use-worker-property';
+import type { WorkerProperty } from '../types/worker-types';
 
 export function WorkerPropertyDetailsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{ propertyId?: string }>();
+  const propertyId = typeof params.propertyId === 'string' ? params.propertyId : undefined;
+  const { property, loading, error, retry } = useWorkerProperty(propertyId);
+
+  const goBack = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace(routes.workerDashboard);
+  };
 
   return (
     <View style={styles.root}>
-      <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 7, paddingBottom: insets.bottom + 90 }]} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 7, paddingBottom: insets.bottom + 90 }]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="button" accessibilityLabel="Go back">
+          <Pressable onPress={goBack} style={styles.backButton} accessibilityRole="button" accessibilityLabel="Go back">
             <Ionicons name="chevron-back" size={23} color={colors.primary} />
           </Pressable>
-          <AppText style={styles.headerTitle}>Property Details</AppText>
+          <AppText style={styles.headerTitle} color={colors.primary}>Property Details</AppText>
           <View style={styles.headerSpacer} />
         </View>
 
-        <View style={styles.hero}>
-          <Image source={images.auth.roomSoft} style={styles.heroImage} resizeMode="cover" />
-          <View style={styles.activeBadge}>
-            <Ionicons name="checkmark-circle" size={13} color={colors.primary} />
-            <AppText style={styles.activeText}>Active</AppText>
-          </View>
-        </View>
-
-        <View style={styles.propertyHeading}>
-          <AppText style={styles.propertyName}>Brew &amp; Bites Café</AppText>
-          <View style={styles.addressRow}>
-            <Ionicons name="location-outline" size={18} color={colors.textSecondary} />
-            <AppText style={styles.address} color={colors.textSecondary}>
-              123 Park Street, Kolkata,{ '\n' }West Bengal 700016
-            </AppText>
-          </View>
-        </View>
-
-        <View style={styles.details}>
-          {details.map((item, index) => (
-            <View key={item.label} style={[styles.detailRow, index < details.length - 1 && styles.detailBorder]}>
-              <Ionicons name={item.icon} size={17} color={colors.textSecondary} />
-              <AppText style={styles.detailLabel} color={colors.textSecondary}>{item.label}</AppText>
-              <AppText style={styles.detailValue} color={colors.textDark}>{item.value}</AppText>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.about}>
-          <AppText style={styles.aboutTitle}>About this Property</AppText>
-          <AppText style={styles.aboutText} color={colors.textSecondary}>
-            A cozy café in the heart of Kolkata with indoor and outdoor seating, serving fresh coffee and snacks.
-          </AppText>
-        </View>
+        {loading ? (
+          <WorkerScreenState loading title="Loading property details" message="Getting the latest property information." />
+        ) : error ? (
+          <WorkerScreenState title="Could not load property details" message={error} onRetry={retry} />
+        ) : property ? (
+          <PropertyDetails property={property} />
+        ) : (
+          <WorkerScreenState title="Property not found" message="This property may no longer be assigned to you." />
+        )}
       </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-        <Pressable style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]} accessibilityRole="button">
-          <Ionicons name="calendar-outline" size={18} color={colors.white} />
-          <AppText style={styles.primaryButtonText} color={colors.white}>View Schedules</AppText>
-          <Ionicons name="arrow-forward" size={17} color={colors.white} />
-        </Pressable>
+      {property && !loading && !error ? (
+        <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+          <Pressable
+            style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}
+            onPress={() => router.push({
+              pathname: routes.wokrerInspectionChecklist,
+              params: { propertyId: property.id },
+            })}
+            accessibilityRole="button"
+            accessibilityLabel={`View schedules for ${property.name}`}
+          >
+            <Ionicons name="calendar-outline" size={18} color={colors.white} />
+            <AppText style={styles.primaryButtonText} color={colors.white}>Inspection Capture</AppText>
+            <Ionicons name="arrow-forward" size={17} color={colors.white} />
+          </Pressable>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+function PropertyDetails({ property }: { property: WorkerProperty }) {
+  return (
+    <>
+      <View style={styles.hero}>
+        <PropertyPhoto imageUrl={require('@/assets/images/decor/room-placeholder.avif')} style={styles.heroImage} />
+        <View style={styles.activeBadge}>
+          <PropertyStatusBadge status={property.verification_status} style={styles.activeBadge} />
+        </View>
       </View>
+
+      <View style={styles.propertyHeading}>
+        <AppText style={styles.propertyName} color={colors.primary}>{property.name}</AppText>
+        <View style={styles.addressRow}>
+          <Ionicons name="location-outline" size={18} color={colors.textSecondary} />
+          <AppText style={styles.address} color={colors.textSecondary}>
+            {property.address}
+          </AppText>
+        </View>
+      </View>
+
+      <View style={styles.details}>
+        <PropertyDetailRow icon="business-outline" label="Property Type" value={property.propertyType || "--"} />
+        <PropertyDetailRow icon="business-outline" label="Total Area" value={property.totalArea || "--"} />
+        <PropertyDetailRow icon="time-outline" label="Working Hours" value={property.workingHours || "--"} />
+        <PropertyDetailRow icon="mail-outline" label="Your Role" value={property.workerRole || "--"} last />
+      </View>
+
+      <View style={styles.about}>
+        <AppText style={styles.aboutTitle} color={colors.primary}>About this Property</AppText>
+        <AppText style={styles.aboutText} color={colors.textSecondary}>{property.description || "--"}</AppText>
+      </View>
+    </>
+  );
+}
+
+function PropertyDetailRow({
+  icon,
+  label,
+  value,
+  last = false,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value: string;
+  last?: boolean;
+}) {
+  return (
+    <View style={[styles.detailRow, !last && styles.detailBorder]}>
+      <Ionicons name={icon} size={17} color={colors.textSecondary} />
+      <AppText style={styles.detailLabel} color={colors.textSecondary}>{label}</AppText>
+      <AppText style={styles.detailValue} color={colors.textDark} numberOfLines={2}>{value}</AppText>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
-  scroll: { paddingHorizontal: 18 },
+  scroll: { flexGrow: 1, paddingHorizontal: 18 },
   header: { height: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   backButton: { width: 36, height: 36, alignItems: 'flex-start', justifyContent: 'center' },
-  headerTitle: { fontFamily: fontFamily.semiBold, fontSize: 14, lineHeight: 20 },
+  headerTitle: { fontFamily: fontFamily.semiBold, fontSize: 18, lineHeight: 20 },
   headerSpacer: { width: 36 },
   hero: { position: 'relative' },
-  heroImage: { width: '100%', height: 188, borderRadius: 8, backgroundColor: colors.surface },
-  activeBadge: { position: 'absolute', right: 10, bottom: 10, flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 9, paddingVertical: 5, borderRadius: 14, backgroundColor: '#E1F4E6' },
-  activeText: { fontFamily: fontFamily.medium, fontSize: 10, lineHeight: 14 },
+  heroImage: { width: '100%', aspectRatio: 1.38, borderRadius: 8 },
+  activeBadge: { position: 'absolute', right: 0, bottom: 50 },
   propertyHeading: { paddingTop: 10, paddingBottom: 12 },
-  propertyName: { fontFamily: fontFamily.semiBold, fontSize: 18, lineHeight: 25 },
+  propertyName: { fontFamily: fontFamily.semiBold, fontSize:24 ,lineHeight: 26, marginBottom: 7 },
   addressRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 7, marginTop: 3 },
-  address: { fontFamily: fontFamily.regular, fontSize: 11, lineHeight: 16 },
-  details: { paddingHorizontal: 1 },
+  address: { flex: 1, fontFamily: fontFamily.regular, fontSize: 16, lineHeight: 22 },
+  details: { borderRadius: 8, borderWidth: 1, borderColor: '#E7EAE5', backgroundColor: 'rgba(255,255,255,0.55)', paddingHorizontal: 10 },
   detailRow: { minHeight: 39, flexDirection: 'row', alignItems: 'center', gap: 9 },
   detailBorder: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#E1E5E0' },
-  detailLabel: { flex: 1, fontFamily: fontFamily.regular, fontSize: 10, lineHeight: 15 },
-  detailValue: { fontFamily: fontFamily.regular, fontSize: 10, lineHeight: 15, textAlign: 'right' },
+  detailLabel: { flex: 1, fontFamily: fontFamily.regular, fontSize: 14, lineHeight: 15 },
+  detailValue: { flex: 1, fontFamily: fontFamily.regular, fontSize: 14, lineHeight: 15, textAlign: 'right' },
   about: { marginTop: 17 },
-  aboutTitle: { fontFamily: fontFamily.semiBold, fontSize: 14, lineHeight: 20 },
-  aboutText: { fontFamily: fontFamily.regular, fontSize: 11, lineHeight: 17, marginTop: 5 },
+  aboutTitle: { fontFamily: fontFamily.semiBold, fontSize: 18, lineHeight: 20 },
+  aboutText: { fontFamily: fontFamily.regular, fontSize: 16, lineHeight: 18, marginTop: 5 },
   footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 18, paddingTop: 10, backgroundColor: colors.background },
-  primaryButton: { minHeight: 46, borderRadius: 24, backgroundColor: colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9 },
-  primaryButtonText: { fontFamily: fontFamily.medium, fontSize: 13, lineHeight: 18 },
+  primaryButton: { minHeight: 56, borderRadius: 24, backgroundColor: colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9 },
+  primaryButtonText: { fontFamily: fontFamily.medium, fontSize: 16, lineHeight: 18 },
   pressed: { opacity: 0.84 },
 });

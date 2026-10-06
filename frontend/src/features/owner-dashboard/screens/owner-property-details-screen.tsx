@@ -76,6 +76,10 @@ export function OwnerPropertyDetailsScreen() {
         <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 10) }]}>
           <PropertyDetailsActions
             disabled={property.verification_status === 'PENDING'}
+            onManageWorkers={() => router.push({
+              pathname: routes.manageWorkers,
+              params: { propertyId: property.id },
+            })}
             onRoomConfiguration={() => router.push({
               pathname: routes.propertySpaces,
               params: { propertyId: property.id },
