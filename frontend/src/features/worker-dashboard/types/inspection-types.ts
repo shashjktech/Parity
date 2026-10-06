@@ -1,5 +1,10 @@
 export type InspectionSpaceType = 'room' | 'area' | 'assets';
-export type InspectionSpaceStatus = 'pending' | 'completed' | 'not_configured';
+export type InspectionSpaceStatus =
+  | 'pending'
+  | 'processing'
+  | 'completed'
+  | 'rejected'
+  | 'not_configured';
 export type InspectionFilter = 'all' | InspectionSpaceStatus;
 
 export type InspectionSpace = {

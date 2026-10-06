@@ -17,6 +17,6 @@ export const routes = {
   propertySpaces: '/property-spaces',
   addPropertyItem: '/add-property-item',
   manageWorkers: '/manage-workers',
-  wokrerInspectionChecklist: '/inspection-checklist',
-  workerSpaceCapture: '/worker-space-capture',
+  workerInspectionChecklist: '/inspection-checklist',
+  workerInspectionCapture: '/worker-inspection-capture',
 } as const;

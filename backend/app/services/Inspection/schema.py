@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-
+from datetime import datetime
 
 class InspectionPropertyResponse(BaseModel):
     id: str
@@ -19,3 +19,18 @@ class InspectionSpaceResponse(BaseModel):
 class InspectionChecklistResponse(BaseModel):
     property: InspectionPropertyResponse
     spaces: list[InspectionSpaceResponse]
+    
+class CaptureUploadResponse(BaseModel):
+    captureId: str
+    spaceId: str
+    imageUrl: str
+    status: str
+    capturedAt: datetime
+
+
+class LatestCaptureResponse(BaseModel):
+    captureId: str
+    spaceId: str
+    imageUrl: str
+    status: str
+    capturedAt: datetime

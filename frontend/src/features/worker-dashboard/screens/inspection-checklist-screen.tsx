@@ -22,7 +22,14 @@ import type {
 } from '../types/inspection-types';
 
 const tabs: InspectionSpaceType[] = ['room', 'area', 'assets'];
-const filters: InspectionFilter[] = ['all', 'pending', 'completed', 'not_configured'];
+const filters: InspectionFilter[] = [
+  'all',
+  'pending',
+  'processing',
+  'completed',
+  'rejected',
+  'not_configured',
+];
 
 function firstParam(value?: string | string[]) {
   return Array.isArray(value) ? value[0] : value;
@@ -45,8 +52,10 @@ export function InspectionChecklistScreen() {
 
   const spaces = checklist?.spaces ?? [];
   const selectedSpaces = spaces.filter((space) => space.type === selectedType);
-  const completed = spaces.filter((space) => space.status === 'completed').length;
-  const percent = spaces.length ? Math.round((completed / spaces.length) * 100) : 0;
+  const captured = spaces.filter(
+    (space) => space.status !== 'pending' && space.status !== 'not_configured',
+  ).length;
+  const percent = spaces.length ? Math.round((captured / spaces.length) * 100) : 0;
 
   const countForFilter = (filter: InspectionFilter) =>
     filter === 'all'
@@ -66,7 +75,7 @@ export function InspectionChecklistScreen() {
     if (!propertyId) return;
 
     router.push({
-      pathname: routes.workerSpaceCapture,
+      pathname: routes.workerInspectionCapture,
       params: { propertyId, spaceId, spaceName, type },
     });
   };
@@ -122,7 +131,7 @@ export function InspectionChecklistScreen() {
             <View style={styles.progressHeading}>
               <AppText style={styles.sectionTitle} color={colors.textDark}>Progress</AppText>
               <AppText style={styles.progressText} color={colors.textSecondary}>
-                {completed} / {spaces.length} items completed
+                {captured} / {spaces.length} photos captured
               </AppText>
             </View>
             <View style={styles.progressRow}>

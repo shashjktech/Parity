@@ -25,3 +25,4 @@ class Space(Base):
     property = relationship("Property", back_populates="spaces")
     #views = relationship("SpaceView", back_populates="space")
     master_images = relationship("MasterImage", back_populates="space")
+    inspection_captures = relationship("InspectionCapture", back_populates="space")

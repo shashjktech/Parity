@@ -6,6 +6,7 @@ class Role(enum.Enum):
 
 class CaptureStatus(enum.Enum):
     PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
     OK = "OK"
     REJECTED = "REJECTED"
 

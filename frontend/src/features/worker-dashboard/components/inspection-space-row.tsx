@@ -12,6 +12,8 @@ type Props = {
 };
 
 export function InspectionSpaceRow({ space, onPress }: Props) {
+  const captureLocked =
+    space.status === 'processing' || space.status === 'completed';
   const typeLabel = space.type === 'assets'
     ? 'Asset'
     : space.type[0].toUpperCase() + space.type.slice(1);
@@ -29,9 +31,15 @@ export function InspectionSpaceRow({ space, onPress }: Props) {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+      disabled={captureLocked}
+      style={({ pressed }) => [
+        styles.row,
+        captureLocked && styles.locked,
+        pressed && styles.pressed,
+      ]}
       accessibilityRole="button"
-      accessibilityLabel={`Open ${space.name}, ${statusLabel}`}
+      accessibilityLabel={`${captureLocked ? 'Captured' : 'Open'} ${space.name}, ${statusLabel}`}
+      accessibilityState={{ disabled: captureLocked }}
     >
       <PropertyPhoto
         imageUrl={space.imageUrl ?? require('@/assets/images/decor/room-placeholder.avif')}
@@ -56,16 +64,32 @@ export function InspectionSpaceRow({ space, onPress }: Props) {
 
       <View style={styles.status}>
         <Ionicons
-          name={space.status === 'completed' ? 'checkmark-circle-outline' : 'ellipse-outline'}
+          name={
+            space.status === 'completed'
+              ? 'checkmark-circle-outline'
+              : space.status === 'processing'
+                ? 'time-outline'
+                : space.status === 'rejected'
+                  ? 'alert-circle-outline'
+                  : 'ellipse-outline'
+          }
           size={22}
-          color={space.status === 'completed' ? colors.primary : colors.textSecondary}
+          color={
+            space.status === 'completed'
+              ? colors.primary
+              : space.status === 'rejected'
+                ? colors.error
+                : colors.textSecondary
+          }
         />
         <AppText style={styles.statusText} color={colors.textSecondary}>
           {statusLabel}
         </AppText>
       </View>
 
-      <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+      {!captureLocked ? (
+        <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+      ) : null}
     </Pressable>
   );
 }
@@ -80,6 +104,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E5E9E5',
   },
   pressed: { opacity: 0.7 },
+  locked: { opacity: 0.75 },
   image: { width: 72, height: 72, borderRadius: 9 },
   info: { flex: 1, gap: 4 },
   name: { fontFamily: fontFamily.semiBold, fontSize: 15, lineHeight: 19 },

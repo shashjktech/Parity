@@ -54,7 +54,7 @@ export function WorkerPropertyDetailsScreen() {
           <Pressable
             style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}
             onPress={() => router.push({
-              pathname: routes.wokrerInspectionChecklist,
+              pathname: routes.workerInspectionChecklist,
               params: { propertyId: property.id },
             })}
             accessibilityRole="button"

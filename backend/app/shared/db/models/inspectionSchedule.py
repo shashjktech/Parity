@@ -27,4 +27,4 @@ class InspectionSchedule(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
     property = relationship("Property", back_populates="schedules")
-    captures = relationship("InspectionCapture", back_populates="schedule")
+    # captures = relationship("InspectionCapture", back_populates="schedule")

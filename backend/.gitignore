@@ -61,6 +61,7 @@ build/
 dist/
 *.egg-info/
 masterImages/
+inspectionImages/
 
 firebase-adminsdk.json
 firebase_sdk.json

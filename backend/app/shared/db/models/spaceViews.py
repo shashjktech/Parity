@@ -22,4 +22,4 @@ class SpaceView(Base):
 
     #space = relationship("Space", back_populates="views")
     #master_images = relationship("MasterImage", back_populates="space_view")
-    inspection_captures = relationship("InspectionCapture", back_populates="space_view")
+    # inspection_captures = relationship("InspectionCapture", back_populates="space_view")
