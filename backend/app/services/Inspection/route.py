@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import require_worker
@@ -55,9 +56,40 @@ def get_inspection_checklist(
                 type=space.space_type.value.lower(),
                 name=space.name,
                 location="Ground Floor",
-                imageUrl=master_image_url,
+                imageUrl=(
+                    f"/v1/inspection/properties/{property_id}/spaces/{space.id}/master-image"
+                    if master_image_url
+                    else None
+                ),
                 status="pending",
             )
             for space, master_image_url in spaces
         ],
     )
+
+
+@router.get(
+    "/properties/{property_id}/spaces/{space_id}/master-image",
+    response_class=FileResponse,
+)
+def get_inspection_master_image(
+    property_id: str,
+    space_id: str,
+    current_user: AppUser = Depends(require_worker),
+    db: Session = Depends(get_db),
+):
+    service = InspectionService(db)
+
+    try:
+        image_path = service.get_master_image_path(
+            user_id=current_user.id,
+            property_id=property_id,
+            space_id=space_id,
+        )
+    except (PermissionError, LookupError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Image not found or worker is not assigned to this property.",
+        ) from exc
+
+    return FileResponse(image_path)

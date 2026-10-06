@@ -1,10 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import type { ImagePickerAsset } from "expo-image-picker";
 import { useState } from "react";
 import {
   Alert,
-  Image,
   Modal,
   Pressable,
   StyleSheet,
@@ -21,6 +21,7 @@ type Props = {
 
 export function SpacePhotoPicker({ photo, onChange, disabled }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [failedPreviewUri, setFailedPreviewUri] = useState<string | null>(null);
 
   const choose = async (source: "camera" | "library") => {
     try {
@@ -46,7 +47,10 @@ export function SpacePhotoPicker({ photo, onChange, disabled }: Props) {
           ? await ImagePicker.launchCameraAsync(options)
           : await ImagePicker.launchImageLibraryAsync(options);
 
-      if (!result.canceled && result.assets[0]) onChange(result.assets[0]);
+      if (!result.canceled && result.assets[0]) {
+        setFailedPreviewUri(null);
+        onChange(result.assets[0]);
+      }
     } catch {
       Alert.alert("Photo unavailable", "Could not open the photo source.");
     }
@@ -67,12 +71,25 @@ export function SpacePhotoPicker({ photo, onChange, disabled }: Props) {
         accessibilityLabel={photo ? "Change photo" : "Add photo"}
         style={[styles.box, !photo && styles.boxEmpty, disabled && styles.disabled]}
       >
-        {photo ? (
+        {photo && failedPreviewUri !== photo.uri ? (
           <>
-            <Image source={{ uri: photo.uri }} style={styles.preview} />
+            <Image
+              source={{ uri: photo.uri }}
+              style={styles.preview}
+              contentFit="cover"
+              onError={({ error }) => {
+                console.error("[SpacePhotoPicker] Selected image preview failed", {
+                  error,
+                });
+                setFailedPreviewUri(photo.uri);
+              }}
+            />
             <Pressable
               disabled={disabled}
-              onPress={() => onChange(null)}
+              onPress={() => {
+                setFailedPreviewUri(null);
+                onChange(null);
+              }}
               hitSlop={8}
               style={styles.removeBtn}
               accessibilityRole="button"
@@ -81,6 +98,30 @@ export function SpacePhotoPicker({ photo, onChange, disabled }: Props) {
               <Ionicons name="close" size={16} color="#fff" />
             </Pressable>
           </>
+        ) : photo ? (
+          <View style={styles.previewError}>
+            <Pressable
+              onPress={() => setFailedPreviewUri(null)}
+              accessibilityRole="button"
+              accessibilityLabel="Retry photo preview"
+            >
+              <Ionicons name="image-outline" size={32} color={colors.textMuted} />
+              <AppText color={colors.textSecondary}>Preview unavailable. Tap to retry.</AppText>
+            </Pressable>
+            <Pressable
+              disabled={disabled}
+              onPress={() => {
+                setFailedPreviewUri(null);
+                onChange(null);
+              }}
+              hitSlop={8}
+              style={styles.removeBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Remove photo"
+            >
+              <Ionicons name="close" size={16} color="#fff" />
+            </Pressable>
+          </View>
         ) : (
           <View style={styles.placeholder}>
             <Ionicons name="camera-outline" size={32} color={colors.primary} />
@@ -143,6 +184,11 @@ const styles = StyleSheet.create({
   },
   disabled: { opacity: 0.5 },
   placeholder: { alignItems: "center", gap: 6 },
+  previewError: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   preview: { width: "100%", height: "100%" },
   removeBtn: {
     position: "absolute",

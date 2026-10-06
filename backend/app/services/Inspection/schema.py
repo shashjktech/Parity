@@ -11,6 +11,7 @@ class InspectionSpaceResponse(BaseModel):
     id: str
     type: str
     name: str
+    location: str | None = None
     imageUrl: str | None = None
     status: str
 

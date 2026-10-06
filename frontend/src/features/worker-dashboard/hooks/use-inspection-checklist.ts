@@ -26,8 +26,15 @@ export function useInspectionChecklist(propertyId?: string) {
       setLoading(true);
       setError(undefined);
 
+      console.log(
+        '[InspectionChecklist] Calling getInspectionChecklist with:',
+        propertyId,
+      );
+
       getInspectionChecklist(propertyId)
         .then((result) => {
+          console.log('[InspectionChecklist] API SUCCESS');
+          console.log('[InspectionChecklist] Result:', result);
           if (active) setChecklist(result);
         })
         .catch((cause: unknown) => {

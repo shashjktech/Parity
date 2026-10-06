@@ -40,7 +40,7 @@ const mockChecklist: InspectionChecklist = {
   spaces: [
     ...makeSpaces('room', roomNames),
     ...makeSpaces('area', areaNames),
-    ...makeSpaces('asset', assetNames),
+    ...makeSpaces('assets', assetNames),
   ],
 };
 

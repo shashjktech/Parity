@@ -21,7 +21,7 @@ import type {
   InspectionSpaceType,
 } from '../types/inspection-types';
 
-const tabs: InspectionSpaceType[] = ['room', 'area', 'asset'];
+const tabs: InspectionSpaceType[] = ['room', 'area', 'assets'];
 const filters: InspectionFilter[] = ['all', 'pending', 'completed', 'not_configured'];
 
 function firstParam(value?: string | string[]) {
@@ -148,7 +148,7 @@ export function InspectionChecklistScreen() {
                     style={[styles.tab, selected && styles.selectedTab]}
                   >
                     <AppText style={styles.tabText} color={selected ? colors.primary : colors.textSecondary}>
-                      {type === 'asset' ? 'Assets' : `${titleCase(type)}s`} ({count})
+                      {type === 'assets' ? 'Assets' : `${titleCase(type)}s`} ({count})
                     </AppText>
                   </Pressable>
                 );
@@ -160,7 +160,7 @@ export function InspectionChecklistScreen() {
               <TextInput
                 value={search}
                 onChangeText={setSearch}
-                placeholder={`Search ${selectedType}s...`}
+                placeholder={`Search ${selectedType === 'assets' ? 'assets' : `${selectedType}s`}...`}
                 placeholderTextColor={colors.textSecondary}
                 style={styles.searchInput}
                 returnKeyType="search"
