@@ -12,7 +12,7 @@ type Props = {
 };
 
 export function InspectionSpaceRow({ space, onPress }: Props) {
-  const typeLabel = space.type === 'asset'
+  const typeLabel = space.type === 'assets'
     ? 'Asset'
     : space.type[0].toUpperCase() + space.type.slice(1);
 
@@ -49,7 +49,7 @@ export function InspectionSpaceRow({ space, onPress }: Props) {
         {space.location ? (
           <View style={styles.metaRow}>
             <Ionicons name="location-outline" size={16} color={colors.textSecondary} />
-            <AppText style={styles.meta} color={colors.textSecondary}>{space.location}</AppText>
+            <AppText style={styles.meta} color={colors.textSecondary}>{space.location || "ground floor"}</AppText>
           </View>
         ) : null}
       </View>

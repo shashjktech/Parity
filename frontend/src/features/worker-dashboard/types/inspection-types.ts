@@ -1,4 +1,4 @@
-export type InspectionSpaceType = 'room' | 'area' | 'asset';
+export type InspectionSpaceType = 'room' | 'area' | 'assets';
 export type InspectionSpaceStatus = 'pending' | 'completed' | 'not_configured';
 export type InspectionFilter = 'all' | InspectionSpaceStatus;
 

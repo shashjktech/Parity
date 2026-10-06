@@ -49,12 +49,6 @@
           "cameraPermission": "Allow Parity to take a photo of a room, area, or asset."
         }
       ],
-      [
-        "react-native-maps",
-        {
-          "androidGoogleMapsApiKey": "process.env.GOOGLE_MAPS_API_KEY"
-        }
-      ],
       "expo-font",
       "expo-asset",
       "expo-secure-store",
