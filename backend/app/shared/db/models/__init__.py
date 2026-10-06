@@ -7,3 +7,4 @@ from .space import Space
 from .spaceViews import SpaceView
 from .masterImage import MasterImage
 from .inspectionSchedule import InspectionSchedule
+from .propertyWorker import PropertyWorker

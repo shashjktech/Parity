@@ -23,9 +23,14 @@ from app.services.auth.schema import (
     RefreshTokenRequest,
     SignupRequest,
     TokenResponse,
+    UserResponse,
 )
 from app.shared.db.models.user import AppUser
+from app.shared.db.models.propertyWorker import PropertyWorker
+from app.shared.db.models.property import Property
 from app.shared.db.models.user_session import UserSession
+from app.shared.db.enums import Role,PropertyWorkerStatus
+
 
 logger = logging.getLogger(__name__)
 
@@ -83,10 +88,11 @@ class AuthService:
         else:
             logger.info("Logout requested for an unknown or previously rotated refresh token")
 
+
     @classmethod
     def register(
-        cls, 
-        db: DBSession, 
+        cls,
+        db: DBSession,
         data: SignupRequest,
         ip_address: Optional[str] = None,
         device_info: Optional[str] = None,
@@ -98,26 +104,49 @@ class AuthService:
         if not availability.is_available:
             cls.raise_availability_error(availability)
 
-        
-        print("payload from frontend", data)
-        # 2. Verify Firebase OTP Token against the provided phone
-        #verify_phone_token(id_token=data.firebaseIdToken, expected_phone=data.phone)
+        # 2. Workers must supply a property code that exists.
+        #    Checked BEFORE creating anything, so no half-created users.
+        target_property = None
+        if data.role == Role.WORKER:
+            target_property = db.get(Property, data.propertyCode)
+            if target_property is None:
+                logger.info("Worker signup rejected: property code not found")
+                raise AppError(
+                    "PROPERTY_NOT_FOUND",
+                    status.HTTP_404_NOT_FOUND,
+                    "No property found with this code. Please check and try again.",
+                )
 
-        # 3. Create User
+        # 3. Verify Firebase OTP token against the provided phone
+        is_phone_verified = verify_phone_token(
+            id_token=data.firebaseIdToken,
+            expected_phone=data.phone,
+        )
+
+        # 4. Create user (and worker link, in the same transaction)
         new_user = AppUser(
             id=generate_id(),
             firstName=data.firstName,
             lastName=data.lastName,
             email=data.email,
             phone=data.phone,
-            isPhoneVerified=True,
+            isPhoneVerified=is_phone_verified,
             passwordHash=hash_password(data.password),
             userRole=data.role,
         )
 
         db.add(new_user)
         try:
-            db.flush()
+            db.flush()  # user row must exist before the worker row (FK)
+            if target_property is not None:
+                db.add(
+                    PropertyWorker(
+                        user_id=new_user.id,
+                        property_id=target_property.id,
+                        worker_status=PropertyWorkerStatus.ACTIVE,
+                    )
+                )
+                db.flush()
             db.refresh(new_user)
         except IntegrityError:
             db.rollback()
@@ -145,9 +174,11 @@ class AuthService:
                 "Unable to create the account right now.",
             ) from None
 
-        # 4. Log the user in immediately upon successful registration
+        # 5. Log the user in; this commits user + worker row together
         logger.info("Signup user record staged; creating authentication session")
         return cls.create_or_rotate_session(db, new_user, ip_address, device_info)
+
+
 
     @classmethod
     def login(
@@ -230,7 +261,7 @@ class AuthService:
         response = TokenResponse(
             access_token=access_token,
             refresh_token=new_refresh_token,
-            user=user,
+            user=UserResponse.model_validate(user),
         )
         print("Response :" , response)
         try:

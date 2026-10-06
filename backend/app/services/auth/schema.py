@@ -23,6 +23,23 @@ class SignupRequest(BaseModel):
     firebaseIdToken: str = Field(
         validation_alias=AliasChoices("firebaseIdToken", "firebase_id_token")
     )
+    propertyCode: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("propertyCode", "property_code"),
+    )
+    
+    @field_validator("propertyCode", mode="before")
+    @classmethod
+    def normalize_property_code(cls, value: object) -> Optional[str]:
+        if value is None:
+            return None
+        return str(value).strip().upper()
+    
+    @model_validator(mode="after")
+    def require_property_code_for_workers(self):
+        if self.role == Role.WORKER and not self.propertyCode:
+            raise ValueError("Property code is required for workers.")
+        return self
 
     @field_validator("phone", mode="before")
     @classmethod
