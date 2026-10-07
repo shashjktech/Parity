@@ -42,7 +42,7 @@ export function InspectionSpaceRow({ space, onPress }: Props) {
       accessibilityState={{ disabled: captureLocked }}
     >
       <PropertyPhoto
-        imageUrl={space.imageUrl ?? require('@/assets/images/decor/room-placeholder.avif')}
+        imageUrl={space.imageUrl ?? require('@/assets/images/decor/no-image.png')}
         style={styles.image}
       />
 

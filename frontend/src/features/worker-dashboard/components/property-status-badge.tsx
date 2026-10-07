@@ -1,10 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 
 import { AppText } from "@/components/ui";
 import { colors, fontFamily } from "@/theme";
 import type { WorkerProperty } from "../types/worker-types";
-type Props = { status: WorkerProperty["verificationStatus"] };
+type Props = { status: WorkerProperty["verification_status"],  style?: StyleProp<ViewStyle>; };
 
 export function PropertyStatusBadge({ status }: Props) {
   const active = status === "VERIFIED";

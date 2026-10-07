@@ -91,15 +91,15 @@ function PropertyDetails({ property }: { property: WorkerProperty }) {
       </View>
 
       <View style={styles.details}>
-        <PropertyDetailRow icon="business-outline" label="Property Type" value={property.propertyType || "--"} />
-        <PropertyDetailRow icon="business-outline" label="Total Area" value={property.totalArea || "--"} />
-        <PropertyDetailRow icon="time-outline" label="Working Hours" value={property.workingHours || "--"} />
-        <PropertyDetailRow icon="mail-outline" label="Your Role" value={property.workerRole || "--"} last />
+        <PropertyDetailRow icon="business-outline" label="Property Type" value={"No value available"} />
+        <PropertyDetailRow icon="business-outline" label="Total Area" value={ "No value available"} />
+        <PropertyDetailRow icon="time-outline" label="Working Hours" value={"No value available"} />
+        <PropertyDetailRow icon="mail-outline" label="Your Role" value={ "No value available"} last />
       </View>
 
       <View style={styles.about}>
         <AppText style={styles.aboutTitle} color={colors.primary}>About this Property</AppText>
-        <AppText style={styles.aboutText} color={colors.textSecondary}>{property.description || "--"}</AppText>
+        <AppText style={styles.aboutText} color={colors.textSecondary}>{ "No description available"}</AppText>
       </View>
     </>
   );
