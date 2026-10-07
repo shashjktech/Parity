@@ -135,13 +135,13 @@ def run_capture_pipeline(capture_id: str, property_id: str, space_id: str) -> No
                 prompt_text=inputs["prompt_text"],
                 audit_mode="ALL",
                 output_dir=str(annotated_dir),
-                output_filename=f"{capture_id}.jpg",
+                output_filename=f"{capture_id}_annotated.jpg",
             )
 
             logger.info(
                 "Pipeline completed capture_id=%s room=%s verdict=%s "
                 "ssim=%s active_bulbs=%s expected_bulbs=%s "
-                "missing=%s clutter=%s drift=%s out_of_view=%s",
+                "missing=%s clutter=%s drift=%s out_of_view=%s output_dir=%s",
                 capture_id,
                 space_id,
                 result.get("verdict"),
@@ -152,6 +152,7 @@ def run_capture_pipeline(capture_id: str, property_id: str, space_id: str) -> No
                 len(result.get("clutter_items", [])),
                 len(result.get("drift_alerts", [])),
                 len(result.get("out_of_view_bulbs", [])),
+                "output_dir=%s" % annotated_dir,
             )
 
         verdict = result.get("verdict")

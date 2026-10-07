@@ -58,6 +58,7 @@ def get_model() -> str:
 
 def get_gemini_client() -> genai.Client | None:
   api_key = os.getenv("GEMINI_API_KEY")
+  print(f"[VLM] Using Gemini model '{get_model()}' ,api_key set: {api_key}")
   if not api_key:
     return None
   return genai.Client(api_key=api_key)
@@ -112,6 +113,7 @@ def call_huggingface_vlm(
     from huggingface_hub import InferenceClient
 
     token = hf_token or os.getenv("HF_TOKEN")
+    print(f"[VLM] Using Hugging Face model '{hf_model}' ,token set: {token}")
     if not token:
         raise ValueError("HF_TOKEN environment variable is not set.")
 

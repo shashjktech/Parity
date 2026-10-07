@@ -331,6 +331,14 @@ def evaluate_worker_capture(
 
     # Run pipeline stages
     ctx = runner.run(ctx)
+    expected = ctx.master_data.get("bulb_detections") or ctx.master_data.get("bulbs", [])
+    print("[DEBUG] master_data keys:", list(ctx.master_data.keys()))
+    print("[DEBUG] image_shape:", ctx.master_data.get("image_shape"))
+    print("[DEBUG] expected_bulbs:", len(expected))
+    print("[DEBUG] detected bulbs:", len(ctx.bulb_detections))
+    print("[DEBUG] aligned img is None:", ctx.aligned_current_img is None)
+    print("[DEBUG] missing/drift/clutter:", ctx.missing_items, ctx.drift_alerts, ctx.clutter_items)
+    print("[DEBUG] verdict:", ctx.verdict, "mode:", ctx.audit_mode)
 
     # Paint visual annotations
     annotated_canvas = draw_discrepancy_annotations(ctx)
