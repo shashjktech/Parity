@@ -75,5 +75,6 @@ class InspectionCapture(Base):
     worker = relationship("AppUser", back_populates="inspection_captures")
     # schedule = relationship("InspectionSchedule", back_populates="captures")
     space = relationship("Space", back_populates="inspection_captures")
+    issues = relationship("IssueTicket", back_populates="capture")
     # space_view = relationship("SpaceView", back_populates="inspection_captures")
     #issues = relationship("IssueTicket", back_populates="capture")

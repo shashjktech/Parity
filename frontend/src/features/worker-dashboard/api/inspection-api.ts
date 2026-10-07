@@ -4,6 +4,7 @@ import { request } from '@/services/http/http-client';
 import { tokenStorage } from '@/services/storage/token-storage';
 import type {
   InspectionChecklist,
+  InspectionCaptureResult,
   InspectionSpace,
   InspectionSpaceType,
 } from '../types/inspection-types';
@@ -28,6 +29,7 @@ function makeSpaces(type: InspectionSpaceType, names: string[]): InspectionSpace
     location: type === 'room' ? (index === 0 ? 'Ground Floor' : 'First Floor') : null,
     imageUrl: null,
     status: 'pending',
+    captureId: null,
   }));
 }
 
@@ -65,6 +67,19 @@ export async function getInspectionChecklist(
 
   return request<InspectionChecklist>(
     `/v1/inspection/properties/${encodeURIComponent(propertyId)}/inspection-checklist`,
+    { token: await getAccessToken() },
+  );
+}
+
+export async function getInspectionCaptureResult(
+  propertyId: string,
+  spaceId: string,
+  captureId: string,
+): Promise<InspectionCaptureResult> {
+  return request<InspectionCaptureResult>(
+    `/v1/inspection/properties/${encodeURIComponent(propertyId)}` +
+      `/spaces/${encodeURIComponent(spaceId)}` +
+      `/captures/${encodeURIComponent(captureId)}/result`,
     { token: await getAccessToken() },
   );
 }

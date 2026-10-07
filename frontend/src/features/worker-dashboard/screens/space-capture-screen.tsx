@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui';
+import { routes } from '@/constants/routes';
 import { colors, fontFamily } from '@/theme';
 import { PropertyPhoto } from '@/features/worker-dashboard/components/property-photo';
 import { toApiError } from '@/services/http/api-error';
@@ -162,7 +163,7 @@ export function SpaceCaptureScreen() {
     }
 
     try {
-      await upload(
+      const result = await upload(
         propertyId,
         spaceId,
         {
@@ -172,11 +173,15 @@ export function SpaceCaptureScreen() {
         },
       );
 
-      /*
-       * The checklist can refetch and mark this
-       * space as completed when the screen closes.
-       */
-      router.back();
+      router.replace({
+        pathname: routes.workerInspectionResults,
+        params: {
+          propertyId,
+          spaceId,
+          captureId: result.captureId,
+          spaceName,
+        },
+      });
     } catch (cause) {
       Alert.alert(
         'Upload failed',

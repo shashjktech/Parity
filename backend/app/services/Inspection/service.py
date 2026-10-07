@@ -9,11 +9,14 @@ from app.shared.db.models import (
     Property,
     PropertyWorker,
     Space,
+    MasterImage,
+    Prompt,
     InspectionCapture,
+    IssueTicket,
 )
 from app.shared.utils.inspection_image_storage import InspectionImageStorage
 from app.services.spaces.service import SpaceService
-
+from collections.abc import Sequence
 
 logger = logging.getLogger(__name__)
 
@@ -371,6 +374,36 @@ class InspectionService:
 
         return image_path
 
+    def get_capture_result(
+        self,
+        user_id: str,
+        property_id: str,
+        space_id: str,
+        capture_id: str,
+    ) -> tuple[InspectionCapture, Sequence[IssueTicket]]:
+        if self._get_assignment(user_id, property_id) is None:
+            raise PermissionError("Worker is not assigned to this property.")
+
+        capture = self.db.scalar(
+            select(InspectionCapture)
+            .join(Space, Space.id == InspectionCapture.space_id)
+            .where(
+                InspectionCapture.id == capture_id,
+                InspectionCapture.space_id == space_id,
+                InspectionCapture.worker_id == user_id,
+                Space.property_id == property_id,
+            )
+        )
+        if capture is None:
+            raise LookupError("Inspection capture not found.")
+
+        issues = self.db.scalars(
+            select(IssueTicket)
+            .where(IssueTicket.capture_id == capture_id)
+            .order_by(IssueTicket.created_at.asc(), IssueTicket.id.asc())
+        ).all()
+        return capture, issues
+
     # ============================================================
     # SHARED WORKER ASSIGNMENT GUARD
     # ============================================================
@@ -387,3 +420,60 @@ class InspectionService:
                 PropertyWorker.worker_status == PropertyWorkerStatus.ACTIVE,
             )
         )
+        
+    # run pipeline resolve input paths
+    
+    def resolve_pipeline_inputs(
+        self,
+        property_id: str,
+        space_id: str,
+        capture_id: str,
+    ) -> dict:
+        property_obj = self.db.scalar(select(Property).where(Property.id == property_id))
+        if property_obj is None:
+            raise LookupError("Property not found.")
+
+        space = self.db.scalar(
+            select(Space).where(Space.id == space_id, Space.property_id == property_id)
+        )
+        if space is None:
+            raise LookupError("Space not found for this property.")
+
+        capture = self.db.get(InspectionCapture, capture_id)
+        if capture is None or capture.space_id != space_id:
+            raise LookupError("Capture not found.")
+
+        capture_path = Path(capture.capture_image_url).resolve()
+        if not capture_path.is_file():
+            raise LookupError("Capture image file not found.")
+
+        # Reuses the existing verified resolution (owner context)
+        master_path = SpaceService(self.db).get_master_image_path(
+            property_id=property_id,
+            space_id=space_id,
+            user_id=property_obj.owner_id,
+        )
+
+        master_row = self.db.scalar(
+            select(MasterImage)
+            .where(MasterImage.property_id == property_id, MasterImage.space_id == space_id)
+            .order_by(MasterImage.created_at.asc())
+        )
+
+        prompt_text = None
+        if master_row is not None and master_row.prompt_id:
+            prompt = self.db.get(Prompt, master_row.prompt_id)
+            if prompt is not None:
+                prompt_text = prompt.prompt_text
+        # Missing prompt is NOT fatal: prompt_id is nullable by design;
+        # the pipeline falls back to ALL mode.
+
+        return {
+            "capture": capture,
+            "space": space,
+            "current_image_path": capture_path,
+            "master_image_path": master_path,
+            "baseline_json_path": master_path.parent / f"{space_id}_baseline.json",
+            "prompt_text": prompt_text,
+            "annotated_dir": self.storage.get_space_directory(property_id, space_id) / "annotated",
+        }

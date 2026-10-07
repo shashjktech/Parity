@@ -12,15 +12,35 @@ type Props = {
 };
 
 export function InspectionSpaceRow({ space, onPress }: Props) {
-  const captureLocked =
-    space.status === 'processing' || space.status === 'completed';
   const typeLabel = space.type === 'assets'
     ? 'Asset'
     : space.type[0].toUpperCase() + space.type.slice(1);
 
-  const statusLabel = space.status === 'not_configured'
-    ? 'Not Configured'
-    : space.status[0].toUpperCase() + space.status.slice(1);
+  const statusLabel: Record<InspectionSpace['status'], string> = {
+    pending: 'Pending',
+    processing: 'Processing',
+    completed: 'Completed',
+    rejected: 'Issues Found',
+    failed: 'Failed · Retry',
+    not_configured: 'Not Configured',
+  };
+
+  const badgeColor =
+    space.status === 'completed'
+      ? '#E3F3E8'
+      : space.status === 'processing'
+        ? '#E4F0FF'
+        : space.status === 'rejected' || space.status === 'failed'
+          ? '#FCE6E3'
+          : '#F0F0EF';
+  const badgeTextColor =
+    space.status === 'completed'
+      ? '#145C45'
+      : space.status === 'processing'
+        ? '#1D5A91'
+        : space.status === 'rejected' || space.status === 'failed'
+          ? '#B3261E'
+          : '#686D6A';
 
   const typeIcon = space.type === 'room'
     ? 'bed-outline'
@@ -31,15 +51,15 @@ export function InspectionSpaceRow({ space, onPress }: Props) {
   return (
     <Pressable
       onPress={onPress}
-      disabled={captureLocked}
+      disabled={space.status === 'not_configured'}
       style={({ pressed }) => [
         styles.row,
-        captureLocked && styles.locked,
+        space.status === 'rejected' && styles.issueRow,
         pressed && styles.pressed,
       ]}
       accessibilityRole="button"
-      accessibilityLabel={`${captureLocked ? 'Captured' : 'Open'} ${space.name}, ${statusLabel}`}
-      accessibilityState={{ disabled: captureLocked }}
+      accessibilityLabel={`Open ${space.name}, ${statusLabel[space.status]}`}
+      accessibilityState={{ disabled: space.status === 'not_configured' }}
     >
       <PropertyPhoto
         imageUrl={space.imageUrl ?? require('@/assets/images/decor/no-image.png')}
@@ -62,54 +82,46 @@ export function InspectionSpaceRow({ space, onPress }: Props) {
         ) : null}
       </View>
 
-      <View style={styles.status}>
+      <View style={[styles.statusBadge, { backgroundColor: badgeColor }]}>
         <Ionicons
-          name={
-            space.status === 'completed'
-              ? 'checkmark-circle-outline'
-              : space.status === 'processing'
-                ? 'time-outline'
-                : space.status === 'rejected'
-                  ? 'alert-circle-outline'
-                  : 'ellipse-outline'
-          }
-          size={22}
-          color={
-            space.status === 'completed'
-              ? colors.primary
-              : space.status === 'rejected'
-                ? colors.error
-                : colors.textSecondary
-          }
+          name={space.status === 'completed'
+            ? 'checkmark-circle'
+            : space.status === 'processing'
+              ? 'ellipsis-horizontal-circle'
+              : space.status === 'rejected' || space.status === 'failed'
+                ? 'alert-circle'
+                : 'information-circle-outline'}
+          size={16}
+          color={badgeTextColor}
         />
-        <AppText style={styles.statusText} color={colors.textSecondary}>
-          {statusLabel}
+        <AppText style={styles.statusText} color={badgeTextColor} numberOfLines={1}>
+          {statusLabel[space.status]}
         </AppText>
       </View>
 
-      {!captureLocked ? (
-        <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-      ) : null}
+      <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   row: {
-    minHeight: 92,
+    minHeight: 76,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 9,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E5E9E5',
+    gap: 10,
+    paddingHorizontal: 8,
+    marginBottom: 7,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
   },
   pressed: { opacity: 0.7 },
-  locked: { opacity: 0.75 },
-  image: { width: 72, height: 72, borderRadius: 9 },
+  issueRow: { backgroundColor: '#FDEAE7' },
+  image: { width: 62, height: 62, borderRadius: 9 },
   info: { flex: 1, gap: 4 },
   name: { fontFamily: fontFamily.semiBold, fontSize: 15, lineHeight: 19 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   meta: { fontFamily: fontFamily.regular, fontSize: 12, lineHeight: 16 },
-  status: { alignItems: 'center', gap: 3 },
-  statusText: { fontFamily: fontFamily.regular, fontSize: 11 },
+  statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, maxWidth: 118, borderRadius: 18, paddingHorizontal: 8, paddingVertical: 7 },
+  statusText: { fontFamily: fontFamily.semiBold, fontSize: 10 },
 });

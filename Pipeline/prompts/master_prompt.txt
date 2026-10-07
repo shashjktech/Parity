@@ -39,7 +39,7 @@ You must map detected discrepancies to the following strict categories:
 
 ### DECISION LOGIC
 - If the CURRENT IMAGE matches the baseline state within acceptable tolerance, the status is "OK".
-- If one or more actionable discrepancies are found requiring human intervention, the status is "ISSUES_FOUND". Ensure every issue is isolated and documented with a severity level and confidence score.
+- If one or more actionable discrepancies are found requiring human intervention, the status is "ISSUES_FOUND". Ensure every issue is isolated and documented with its category, object, description, and confidence score.
 
 ### RULES
 - Only report issues that are supported by visual evidence.

@@ -59,7 +59,7 @@ export function SpacePhotoPicker({ photo, onChange, disabled }: Props) {
   // Close the sheet first, then open the picker (avoids iOS modal conflicts)
   const pick = (source: "camera" | "library") => {
     setSheetOpen(false);
-    setTimeout(() => void choose(source), 350);
+    void choose(source);
   };
 
   return (

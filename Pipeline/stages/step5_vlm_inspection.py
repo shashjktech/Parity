@@ -2,6 +2,7 @@ from __future__ import annotations
 import os
 import warnings
 import cv2
+import logging
 from Pipeline.config import BASELINES_DIR, MASTER_PROMPT_PATH
 from Pipeline.context import PipelineContext
 from Pipeline.utils.rules import get_room_rule
@@ -12,6 +13,7 @@ warnings.filterwarnings(
     "ignore", category=UserWarning, module="google_genai.models"
 )
 
+logger = logging.getLogger(__name__)
 
 def run(ctx: PipelineContext) -> bool:
   """STEP 5: Multimodal Visual Inspection (VLM)."""
@@ -39,8 +41,15 @@ def run(ctx: PipelineContext) -> bool:
   if target_img is None:
     return False
 
-  ref_img_path = os.path.join(BASELINES_DIR, f"{ctx.room_name}_ref.jpg")
-  if not os.path.exists(ref_img_path):
+  # ref_img_path = os.path.join(BASELINES_DIR, f"{ctx.room_name}_ref.jpg")
+  # if not os.path.exists(ref_img_path):
+  #   return False
+  
+    # Use the in-memory master image — no disk convention.
+  if ctx.master_img is None:
+    return False
+  ok, master_encoded = cv2.imencode(".jpg", ctx.master_img)
+  if not ok:
     return False
 
   success, encoded_img = cv2.imencode(".jpg", target_img)
@@ -50,7 +59,7 @@ def run(ctx: PipelineContext) -> bool:
   try:
     ctx.vlm_result = analyze_room_with_vlm(
         processed_image=encoded_img.tobytes(),
-        master_image=ref_img_path,
+        master_image=master_encoded.tobytes(),
         master_json=ctx.master_data,
         master_prompt=combined_prompt,
     )
@@ -61,8 +70,8 @@ def run(ctx: PipelineContext) -> bool:
     else:
       print("  • [VLM] Scene confirmed against baseline standard.")
 
-  except Exception:
-    # Fail silently to avoid interrupting the audit output
-    pass
+  except Exception as exc:
+    logger.exception("VLM inspection failed for room=%s: %s", ctx.room_name, exc)
+    return False
 
   return True

@@ -307,9 +307,47 @@ class SpaceService:
 
         try:
             self.db.commit()
+            
+            try:
+                prompt = (
+                    self.db.get(Prompt, master_image.prompt_id)
+                    if master_image.prompt_id else None
+                )
+                self.generate_master_baseline(property_id, space_id, saved_image, prompt)
+            except Exception:
+                logger.exception("Baseline generation failed space_id=%s", space_id)
+            
         except Exception:
             self.db.rollback()
             saved_image.unlink(missing_ok=True)
             raise
+        
 
         return image_path
+    
+    def generate_master_baseline(
+        self,
+        property_id: str,
+        space_id: str,
+        master_image_path: Path,
+        prompt: Prompt | None,
+    ) -> None:
+        """Generate the pipeline baseline JSON next to the master image.
+
+        Keyed by space_id: <master_dir>/{space_id}_baseline.json
+        """
+        import sys
+        repo_root = Path(__file__).resolve().parents[4]
+        if str(repo_root) not in sys.path:
+            sys.path.insert(0, str(repo_root))
+
+        from Pipeline.entrypoints.master_service import process_master_image
+
+        process_master_image(
+            image_input=str(master_image_path),
+            room_name=space_id,
+            prompt_name=prompt.name if prompt else None,
+            prompt_instructions=prompt.prompt_text if prompt else None,
+            output_baseline_dir=str(master_image_path.parent),
+            export_annotated_dir=None,
+        )

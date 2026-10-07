@@ -19,4 +19,6 @@ export const routes = {
   manageWorkers: '/manage-workers',
   workerInspectionChecklist: '/inspection-checklist',
   workerInspectionCapture: '/worker-inspection-capture',
+  workerInspectionResults: '/inspection-results',
+  workerInspectionIssueDetail: '/inspection-issue-detail',
 } as const;
