@@ -24,6 +24,7 @@ BULB_KEYWORDS = {
 }
 
 OBJECT_KEYWORDS = {
+    "bed",
     "chair",
     "chairs",
     "table",
